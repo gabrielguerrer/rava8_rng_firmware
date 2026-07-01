@@ -45,10 +45,17 @@ extern "C" {
  * RAVA HEALTH CONTINUOUS
  * =========================== */
 
+typedef struct health_continuous_tests_t
+{
+  uint16_t count_a, count_b;
+}
+health_continuous_tests_t;
+
 void health_continuous_run_tests(const uint8_t *const byte_a, const uint8_t *const byte_b);
+bool health_continuous_get_errors(health_continuous_tests_t *const nrc_error, health_continuous_tests_t *const nap_error);
 
 // COMM
-void comm_health_continuous_get_errors(comm_interface_t *const comm);
+void comm_health_continuous_get_errors(comm_interface_t *const comm_if);
 
 #ifdef __cplusplus
 }

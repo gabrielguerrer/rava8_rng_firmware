@@ -27,7 +27,8 @@ typedef struct health_startup_tests_t
 {
   uint8_t result;
   float a, b, tresh;
-} health_startup_tests_t;
+}
+health_startup_tests_t;
 
 static health_startup_tests_t pc = {0, 0.0f, 0.0f, 0.0f};
 static health_startup_tests_t pc_diff = {0, 0.0f, 0.0f, H_STARTUP_PULSE_COUNT_AVG_DIFF_MIN};
@@ -216,20 +217,20 @@ static bool test_bias(void)
 /*
 Processes the request to execute the startup health tests and send the results.
 */
-void comm_health_startup_run(comm_interface_t *const comm)
+void comm_health_startup_run(comm_interface_t *const comm_if)
 {
   // Run Tests
   health_startup_run_tests();
 
   // Send
-  comm_health_startup_get_results(comm);
+  comm_health_startup_get_results(comm_if);
 }
 
 /*
 Processes the request to send the global result of the startup health validation together with the
 results of the individual startup tests.
 */
-void comm_health_startup_get_results(comm_interface_t *const comm)
+void comm_health_startup_get_results(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -245,5 +246,5 @@ void comm_health_startup_get_results(comm_interface_t *const comm)
   data_out.chisq = chisq;
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }

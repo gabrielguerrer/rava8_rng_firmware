@@ -21,6 +21,11 @@ for each pulse-count acquisition. During initialization, this parameter is loade
 memory, although it may also be modified during runtime without affecting the stored EEPROM
 configuration.
 
+The recommended sampling interval is 10 µs. Values between 5 µs and 10 µs can increase the
+random number generation throughput at the cost of increased output bias. Sampling intervals
+below 5 µs may compromise the entropy of the generated data and are therefore not
+recommended.
+
 After generation, output bytes may optionally be processed by the continuous health-monitoring
 tests which monitors the quality of the generated entropy in real time.
 */
@@ -55,7 +60,7 @@ void rng_gen_byte(uint8_t *const byte_a, uint8_t *const byte_b);
 
 void rng_health_monitoring(const uint8_t *const byte_a, const uint8_t *const byte_b);
 
-void rng_start_byte_stream(comm_interface_t *const comm, uint16_t n_bytes, uint16_t interval_ms, uint8_t rng_cores, uint8_t postproc_id);
+void rng_start_byte_stream(comm_interface_t *const comm_if, uint16_t n_bytes_per_core, uint16_t interval_ms, uint8_t rng_cores, uint8_t postproc_id);
 void rng_stop_byte_stream(void);
 
 #ifdef __cplusplus

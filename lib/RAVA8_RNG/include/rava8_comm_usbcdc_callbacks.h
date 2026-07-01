@@ -29,6 +29,8 @@ void EVENT_USB_Device_Suspend(void);
 void EVENT_USB_Device_WakeUp(void);
 void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t *const CDCInterfaceInfo);
 
+__attribute__((weak)) void rava8_usb_connection_handler(bool connected) {};
+
 #ifdef __cplusplus
 }
 #endif

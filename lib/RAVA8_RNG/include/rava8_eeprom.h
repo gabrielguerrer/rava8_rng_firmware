@@ -41,9 +41,9 @@ void eeprom_init(void);
 void eeprom_read_rng_cfg(rng_config_t *const rng_cfg);
 
 // COMM
-void comm_eeprom_reset_to_default(comm_interface_t *const comm);
-void comm_eeprom_get_rng_config(comm_interface_t *const comm);
-void comm_eeprom_set_rng_config(comm_interface_t *const comm);
+void comm_eeprom_reset_to_default(comm_interface_t *const comm_if);
+void comm_eeprom_get_rng_config(comm_interface_t *const comm_if);
+void comm_eeprom_set_rng_config(comm_interface_t *const comm_if);
 
 #ifdef __cplusplus
 }

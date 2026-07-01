@@ -31,16 +31,16 @@ bool parse_rava_byte(struct comm_state_t *const state, struct comm_message_t *co
     // SOF
     case CS_WAIT_SOF_A: {
       msg->req_error = CE_OK;
-      if (byte == COMM_SOF_A) {
+      if (byte == COMM_SOF_1) {
         state->id = CS_WAIT_SOF_B;
       }
       break;
     }
 
     case CS_WAIT_SOF_B: {
-      if (byte == COMM_SOF_B) {
-        state->id = CS_READ_REQ_ID;
-      } else if (byte == COMM_SOF_A) {
+      if (byte == COMM_SOF_2) {
+        state->id = CS_READ_CLI_ID;
+      } else if (byte == COMM_SOF_1) {
         // Stay in sync
         state->id = CS_WAIT_SOF_B;
       } else {
@@ -49,10 +49,18 @@ bool parse_rava_byte(struct comm_state_t *const state, struct comm_message_t *co
       break;
     }
 
+    // CLI_ID
+    case CS_READ_CLI_ID: {
+      msg->cli_id = byte;
+      state->crc = _crc_ccitt_update(0xFFFF, byte);
+      state->id = CS_READ_REQ_ID;
+      break;
+    }
+
     // REQ_ID
     case CS_READ_REQ_ID: {
       msg->req_id = byte;
-      state->crc = _crc_ccitt_update(0xFFFF, byte);
+      state->crc = _crc_ccitt_update(state->crc, byte);
       state->id = CS_READ_REQ_ERROR;
       break;
     }
@@ -82,24 +90,22 @@ bool parse_rava_byte(struct comm_state_t *const state, struct comm_message_t *co
     case CS_READ_RAND_LEN_B:
       msg->rand_len |= ((uint16_t)byte << 8);
       state->crc = _crc_ccitt_update(state->crc, byte);
-
-      if (msg->rand_len > 2 * RNG_GEN_MAX_NBYTES_PER_CORE) {
+      // Error
+      if (msg->rand_len > 0) {
         msg->req_error = CE_INVALID_RAND_LEN;
         state->id = CS_WAIT_SOF_A;
-        // Error
         return true;
       }
-
       state->id = CS_READ_DATA_LEN;
       break;
 
     // READ_DATA_LEN
     case CS_READ_DATA_LEN: {
       msg->data_len = byte;
+      // Error
       if (msg->data_len > COMM_DATA_MAX_LEN) {
         msg->req_error = CE_INVALID_DATA_LEN;
         state->id = CS_WAIT_SOF_A;
-        // Error
         return true;
       }
       state->crc = _crc_ccitt_update(state->crc, byte);
@@ -131,38 +137,16 @@ bool parse_rava_byte(struct comm_state_t *const state, struct comm_message_t *co
 
     case CS_READ_CRC_B: {
       state->crc_rcv |= ((uint16_t)byte << 8);
+      // Error
       if (state->crc_rcv != state->crc) {
         msg->req_error = CE_INVALID_CRC;
         state->id = CS_WAIT_SOF_A;
-        // Error
         return true;
       }
       // Command properly formed in msg
       state->id = CS_WAIT_SOF_A;
       return true;
-
-      // state->rand_idx = 0;
-      // if (msg->rand_len == 0) {
-      //   state->id = CS_WAIT_SOF_A;
-      //   // Command properly formed in msg
-      //   return true;
-      // }
-      // else {
-      //   state->id = CS_READ_RAND;
-      // }
-      // break;
     }
-
-    // // RAND
-    // case CS_READ_RAND: {
-    //   msg->rand[state->rand_idx++] = byte;
-    //   if (state->rand_idx >= msg->rand_len) {
-    //     state->id = CS_WAIT_SOF_A;
-    //     // Command properly formed in msg
-    //     return true
-    //   }
-    //   break;
-    // }
   }
 
   // Command not ready yet
@@ -173,9 +157,9 @@ bool parse_rava_byte(struct comm_state_t *const state, struct comm_message_t *co
 Reads and parses incoming bytes from the communication interface until a complete message or
 protocol error is detected.
 
-The function continuously consumes bytes available through the provided communication interface and
-feeds them to the state machine parser. When a valid message is received, the parsed data is stored
-in comm_if->msg and the function returns true.
+The function consumes bytes available through the provided communication interface and feeds them
+to the state machine parser. When a valid message is received, the parsed data is stored in
+comm_if->msg and the function returns true.
 
 Returns:
 - True  : A complete message or parsing error was detected
@@ -183,16 +167,18 @@ Returns:
 */
 bool read_rava_msg(comm_interface_t *const comm_if)
 {
-  // Byte available?
   uint8_t b;
-  if (comm_if->read(&b)) {
+
+  // Loop over available bytes
+  while (comm_if->read(&b)) {
 
     // Process RAVA msg
-    bool msg_found = parse_rava_byte(&comm_if->state, &comm_if->msg, b);
-    if (msg_found) {
+    if (parse_rava_byte(&comm_if->state, &comm_if->msg, b)) {
+
+      // Message found
 
       // Update usage counter
-      if (comm_if->msg.comm_id != COMM_DEVICE_GET_USAGE) {
+      if (!(comm_if->msg.comm_id == COMM_DEVICE_GET_USAGE || comm_if->msg.comm_id == COMM_DEVICE_MONITOR)) {
         device_request_count += 1;
       }
 
@@ -224,14 +210,15 @@ void send_rava_msg_header(comm_interface_t *const comm_if,
 
   // Write message header
   uint8_t msg_header[COMM_HEADER_MIN_LEN-2];
-  msg_header[0] = COMM_SOF_A;
-  msg_header[1] = COMM_SOF_B;
-  msg_header[2] = comm_if->msg.req_id;
-  msg_header[3] = req_error;
-  msg_header[4] = comm_if->msg.comm_id;
-  msg_header[5] = rand_len_u.b[0];
-  msg_header[6] = rand_len_u.b[1];
-  msg_header[7] = data_len;
+  msg_header[0] = COMM_SOF_1;
+  msg_header[1] = COMM_SOF_2;
+  msg_header[2] = comm_if->msg.cli_id;
+  msg_header[3] = comm_if->msg.req_id;
+  msg_header[4] = req_error;
+  msg_header[5] = comm_if->msg.comm_id;
+  msg_header[6] = rand_len_u.b[0];
+  msg_header[7] = rand_len_u.b[1];
+  msg_header[8] = data_len;
 
   comm_if->write_buf(msg_header, sizeof(msg_header));
 

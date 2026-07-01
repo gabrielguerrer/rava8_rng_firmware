@@ -23,8 +23,6 @@ static void eeprom_update_rng_cfg(const rng_config_t *const rng_cfg);
  * RAVA8 EEPROM
  * =========================== */
 
-
-
 /*
 Initializes the EEPROM module. If the EEPROM is empty, it is populated with the default
 configuration values.
@@ -111,7 +109,7 @@ static void eeprom_update_rng_cfg(const rng_config_t *const rng_cfg)
 /*
 Processes the request to restore the default EEPROM configuration values.
 */
-void comm_eeprom_reset_to_default(comm_interface_t *const comm)
+void comm_eeprom_reset_to_default(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -130,13 +128,13 @@ void comm_eeprom_reset_to_default(comm_interface_t *const comm)
   data_out.success &= rng_setup_from_eeprom();
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to send the stored RNG configuration parameters.
 */
-void comm_eeprom_get_rng_config(comm_interface_t *const comm)
+void comm_eeprom_get_rng_config(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -148,13 +146,13 @@ void comm_eeprom_get_rng_config(comm_interface_t *const comm)
   eeprom_read_rng_cfg(&data_out.rng_cfg);
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to store the provided RNG configuration parameters in EEPROM.
 */
-void comm_eeprom_set_rng_config(comm_interface_t *const comm)
+void comm_eeprom_set_rng_config(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {rng_config_t rng_cfg;} data_in_t;
@@ -163,11 +161,11 @@ void comm_eeprom_set_rng_config(comm_interface_t *const comm)
   //data_out_t data_out;
 
 // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(pwm_boost_validate_setup_pars(&data_in.rng_cfg.pwm_boost) &&
@@ -176,7 +174,7 @@ void comm_eeprom_set_rng_config(comm_interface_t *const comm)
         rng_setup(data_in.rng_cfg.sampling_interval)    // Setup RNG
         )) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -185,5 +183,5 @@ void comm_eeprom_set_rng_config(comm_interface_t *const comm)
 
   // Process Output
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }

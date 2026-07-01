@@ -57,7 +57,8 @@ typedef struct USB_Descriptor_Configuration_t
   USB_Descriptor_Interface_t               CDC_DCI_Interface;
   USB_Descriptor_Endpoint_t                CDC_DataOutEndpoint;
   USB_Descriptor_Endpoint_t                CDC_DataInEndpoint;
-} USB_Descriptor_Configuration_t;
+}
+USB_Descriptor_Configuration_t;
 
 enum InterfaceDescriptors_t
 {

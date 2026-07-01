@@ -62,7 +62,8 @@ extern "C" {
 typedef struct pwm_config_t
 {
   uint8_t freq_prescaler, top, duty;
-} pwm_config_t;
+}
+pwm_config_t;
 
 enum TIMERS013_CLOCK
 {

@@ -211,11 +211,11 @@ static void d2_write_timer3_input_capture_interval()
   data_out.interval_s = timer3_stop_chronometer();
 
   // Inject original req_id, and comm_id in comm
-  input_capture_cfg.comm->msg.req_id = input_capture_cfg.req_id;
-  input_capture_cfg.comm->msg.comm_id = COMM_PERIPH_D2_TIMER3_INPUT_CAPTURE;
+  input_capture_cfg.comm_if->msg.req_id = input_capture_cfg.req_id;
+  input_capture_cfg.comm_if->msg.comm_id = COMM_PERIPH_D2_TIMER3_INPUT_CAPTURE;
 
   // Send Header
-  send_rava_msg_header(input_capture_cfg.comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(input_capture_cfg.comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /* ===========================
@@ -295,7 +295,7 @@ Supported operations include:
 This request ensures that the appropriate input/output mode is configured before executing read or
 write operations.
 */
-void comm_periph_digi(comm_interface_t *const comm)
+void comm_periph_digi(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t periph_id, digi_comm, digi_comm_par; uint16_t pulse_duration_us;} data_in_t;
@@ -304,25 +304,25 @@ void comm_periph_digi(comm_interface_t *const comm)
   data_out_t data_out = {0};
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.periph_id > 0 &&
       data_in.periph_id <= PERIPHERALS_N &&
       data_in.digi_comm < PERIPH_COMM_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
   if (data_in.digi_comm == PERIPH_PULSE &&
       data_in.pulse_duration_us == 0) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
   // Process Output
@@ -358,7 +358,7 @@ void comm_periph_digi(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
@@ -373,7 +373,7 @@ Supported operations include:
 This request assumes the input/output mode has been properly configured before executing read or
 write operations.
 */
-void comm_periph_d1_digi_fast(comm_interface_t *const comm)
+void comm_periph_d1_digi_fast(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t digi_comm, digi_comm_par; uint16_t pulse_duration_us;} data_in_t;
@@ -382,23 +382,23 @@ void comm_periph_d1_digi_fast(comm_interface_t *const comm)
   data_out_t data_out = {0};
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.digi_comm < PERIPH_COMM_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
   if (data_in.digi_comm == PERIPH_PULSE &&
       data_in.pulse_duration_us == 0) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -435,13 +435,13 @@ void comm_periph_d1_digi_fast(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to enable/disable the D1 external trigger input functionality.
 */
-void comm_periph_d1_trigger_input(comm_interface_t *const comm)
+void comm_periph_d1_trigger_input(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on;} data_in_t;
@@ -450,11 +450,11 @@ void comm_periph_d1_trigger_input(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   // Process Output
@@ -466,13 +466,13 @@ void comm_periph_d1_trigger_input(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to enable/disable the D1 comparator functionality.
 */
-void comm_periph_d1_comparator(comm_interface_t *const comm)
+void comm_periph_d1_comparator(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on, neg_to_d5;} data_in_t;
@@ -481,11 +481,11 @@ void comm_periph_d1_comparator(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   // Process Output
@@ -497,13 +497,13 @@ void comm_periph_d1_comparator(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
-Processes the request to test the device_delay_us() delay function;
+Processes the request to test the device_delay_us() delay function.
 */
-void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm)
+void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint16_t interval_us;} data_in_t;
@@ -512,16 +512,16 @@ void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.interval_us > 0)) {
 
-      send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+      send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
       return;
     }
 
@@ -530,7 +530,7 @@ void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm)
   d1_device_delay_us_test(data_in.interval_us);
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
@@ -538,7 +538,7 @@ Processes the request to enable/disable the D2 input capture functionality.
 
 Currently disabled, as it generates asynchronous messages that must be properly handled by the host.
 */
-void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm)
+void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm_if)
 {
   /*
   // IO Structure
@@ -548,17 +548,17 @@ void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   // Process Output
   if (data_in.on) {
     input_capture_cfg.comm = comm;
-    input_capture_cfg.req_id = comm->msg.req_id;
+    input_capture_cfg.req_id = comm_if->msg.req_id;
     d2_setup_timer3_input_capture();
   }
   else {
@@ -566,14 +566,14 @@ void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
   */
 }
 
 /*
 Processes the request to enable/disable the D3 pediodic trigger functionality.
 */
-void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm)
+void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on; uint16_t interval_ms;} data_in_t;
@@ -582,22 +582,22 @@ void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.interval_ms > 0 && data_in.interval_ms <= TIMER3_MAXIMUM_DELAY_MS)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
   // Process Output
   if (rng_byte_stream_cfg.streaming) {
-    send_rava_msg_header(comm, CE_TIMER3_BUSY, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_TIMER_BUSY, 0, 0, NULL);
     return;
   }
 
@@ -609,13 +609,13 @@ void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to enable/disable the D3 PWM functionality.
 */
-void comm_periph_d3_timer3_pwm(comm_interface_t *const comm)
+void comm_periph_d3_timer3_pwm(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on, freq_prescaler; uint16_t top, duty;} data_in_t;
@@ -624,22 +624,22 @@ void comm_periph_d3_timer3_pwm(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.freq_prescaler < TIMER013_CLK_ENUM_LAST)) {
 
-      send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+      send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
       return;
     }
 
   // Process Output
   if (rng_byte_stream_cfg.streaming) {
-    send_rava_msg_header(comm, CE_TIMER3_BUSY, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_TIMER_BUSY, 0, 0, NULL);
     return;
   }
 
@@ -651,13 +651,13 @@ void comm_periph_d3_timer3_pwm(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to enable/disable the D3 sound functionality.
 */
-void comm_periph_d3_timer3_sound(comm_interface_t *const comm)
+void comm_periph_d3_timer3_sound(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on, volume; uint16_t freq_hz;} data_in_t;
@@ -666,16 +666,16 @@ void comm_periph_d3_timer3_sound(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   // Process Output
   if (rng_byte_stream_cfg.streaming) {
-    send_rava_msg_header(comm, CE_TIMER3_BUSY, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_TIMER_BUSY, 0, 0, NULL);
     return;
   }
 
@@ -687,13 +687,13 @@ void comm_periph_d3_timer3_sound(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to enable/disable the D4 pin change functionality.
 */
-void comm_periph_d4_pin_change(comm_interface_t *const comm)
+void comm_periph_d4_pin_change(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on;} data_in_t;
@@ -702,11 +702,11 @@ void comm_periph_d4_pin_change(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   // Process Output
@@ -718,13 +718,13 @@ void comm_periph_d4_pin_change(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to perform an ADC measurement on D5.
 */
-void comm_periph_d5_adc(comm_interface_t *const comm)
+void comm_periph_d5_adc(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on, ref_5v, clk_prescaler, oversampling_n_bits;} data_in_t;
@@ -733,18 +733,18 @@ void comm_periph_d5_adc(comm_interface_t *const comm)
   data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Process Input
   if (!(data_in.clk_prescaler > 0 &&
         data_in.clk_prescaler < ADC_CLK_ENUM_LAST &&
         data_in.oversampling_n_bits <= 6)) {
 
-      send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+      send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
       return;
     }
 
@@ -758,5 +758,5 @@ void comm_periph_d5_adc(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }

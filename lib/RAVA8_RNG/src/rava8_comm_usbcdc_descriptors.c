@@ -6,7 +6,7 @@
 
 #include <avr/pgmspace.h>
 #include "rava8_comm_usbcdc_descriptors.h"
-#include "rava8_device.h"
+#include "rava8_comm_usbcdc.h"
 
 /* ===========================
  * RAVA8 COMM USBCDC DESCRIPTORS

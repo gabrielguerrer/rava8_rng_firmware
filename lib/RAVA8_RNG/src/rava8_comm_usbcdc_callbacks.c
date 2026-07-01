@@ -5,6 +5,7 @@
  */
 
 // #include <avr/sleep.h>
+#include <rava_rng.h>
 #include "rava8_comm_usbcdc_callbacks.h"
 #include "rava8_comm_usbcdc.h"
 
@@ -83,5 +84,13 @@ from the host.
 */
 void EVENT_CDC_Device_ControLineStateChanged(USB_ClassInfo_CDC_Device_t *const CDCInterfaceInfo)
 {
-  // bool host_ready = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR) != 0;
+  bool host_ready = (CDCInterfaceInfo->State.ControlLineStates.HostToDevice & CDC_CONTROL_LINE_OUT_DTR) != 0;
+
+  // Stop periodic random-byte streaming on disconnection
+  if (!host_ready) {
+    rng_byte_stream_cfg.streaming = false;
+  }
+
+  // RAVA8 callback
+  rava8_usb_connection_handler(host_ready);
 }

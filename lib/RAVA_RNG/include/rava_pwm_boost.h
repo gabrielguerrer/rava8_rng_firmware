@@ -29,7 +29,8 @@ extern "C" {
 typedef struct pwm_boost_config_t
 {
   uint8_t freq_id, duty;
-} pwm_boost_config_t;
+}
+pwm_boost_config_t;
 
 /* ==============================
  * Implemented by the application

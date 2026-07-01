@@ -23,6 +23,11 @@ extern "C" {
  * RAVA8 COMM USBCDC
  * =========================== */
 
+#define RAVA_USB_VID          0x1209 // VID, PID from https://pid.codes
+#define RAVA_USB_PID          0x4884
+#define RAVA_USB_PRODUCT      L"RAVA8 RNG ∿"
+#define RAVA_USB_MANUFACTURER L"Gabriel Guerrer"
+
 extern USB_ClassInfo_CDC_Device_t lufa_usbcdc_if;
 extern comm_interface_t comm_usbcdc_if;
 

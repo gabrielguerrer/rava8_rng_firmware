@@ -23,15 +23,9 @@ static uint8_t nap_counter_a = 1, nap_counter_b = 1;
 static uint8_t nap_target_a, nap_target_b;
 
 // Test Results
-typedef struct health_continuous_tests_t
-{
-  uint16_t count_a, count_b;
-} health_continuous_tests_t;
-
-static health_continuous_tests_t nrc_error = {0}, nap_error = {0};
+static health_continuous_tests_t _nrc_error = {0}, _nap_error = {0};
 
 // Functions
-static void health_continuous_reset_errors(void);
 static void nist_repetition_count(const uint8_t *const byte_a, const uint8_t *const byte_b);
 static void nist_adaptive_proportion(const uint8_t *const byte_a, const uint8_t *const byte_b);
 
@@ -51,18 +45,6 @@ void health_continuous_run_tests(const uint8_t *const byte_a, const uint8_t *con
 }
 
 /*
-Resets the continuous health errors.
-*/
-static void health_continuous_reset_errors(void)
-{
-  nrc_error.count_a = 0;
-  nrc_error.count_b = 0;
-
-  nap_error.count_a = 0;
-  nap_error.count_b = 0;
-}
-
-/*
 The repetition count test detects catastrophic failures that may cause the noise source to become
 stuck at a constant output value for an extended period.
 */
@@ -73,7 +55,7 @@ static void nist_repetition_count(const uint8_t *const byte_a, const uint8_t *co
     nrc_counter_a++;
 
     if (nrc_counter_a >= nrc_cutoff) {
-      nrc_error.count_a++; // Count error on rnd_a
+      _nrc_error.count_a++; // Count error on rnd_a
     }
   }
   else {
@@ -86,7 +68,7 @@ static void nist_repetition_count(const uint8_t *const byte_a, const uint8_t *co
     nrc_counter_b++;
 
     if (nrc_counter_b >= nrc_cutoff) {
-      nrc_error.count_b++; // Count error on rnd_b
+      _nrc_error.count_b++; // Count error on rnd_b
     }
   }
   else {
@@ -112,7 +94,7 @@ static void nist_adaptive_proportion(const uint8_t *const byte_a, const uint8_t 
       nap_counter_a++;
 
       if (nap_counter_a == nap_cutoff)
-        nap_error.count_a++; // Count error on rnd_a
+        _nap_error.count_a++; // Count error on rnd_a
     }
 
     nap_iter_a++;
@@ -131,13 +113,37 @@ static void nist_adaptive_proportion(const uint8_t *const byte_a, const uint8_t 
       nap_counter_b++;
 
       if (nap_counter_b == nap_cutoff)
-        nap_error.count_b++; // Count error on rnd_b
+        _nap_error.count_b++; // Count error on rnd_b
     }
 
     nap_iter_b++;
     if (nap_iter_b == H_CONTINUOUS_ADAPTIVE_PROPORTION_W)
       nap_iter_b = 0;
   }
+}
+
+/*
+Returns the number of continuous health-test errors and resets the corresponding counters.
+*/
+bool health_continuous_get_errors(health_continuous_tests_t *const nrc_error, health_continuous_tests_t *const nap_error)
+{
+  // Copies values
+  *nrc_error = _nrc_error;
+  *nap_error = _nap_error;
+
+  // Reset errors
+  _nrc_error.count_a = 0;
+  _nrc_error.count_b = 0;
+
+  _nap_error.count_a = 0;
+  _nap_error.count_b = 0;
+
+  // Computes and return global error
+  bool has_error = (
+    nrc_error->count_a > 0 || nrc_error->count_b > 0 ||
+    nap_error->count_a > 0 || nap_error->count_b > 0 ) ? true : false;
+
+  return has_error;
 }
 
 /* ===========================
@@ -148,7 +154,7 @@ static void nist_adaptive_proportion(const uint8_t *const byte_a, const uint8_t 
 Processes the request to send the overall result of the continuous health tests together with the
 error counts for each individual test.
 */
-void comm_health_continuous_get_errors(comm_interface_t *const comm)
+void comm_health_continuous_get_errors(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -157,13 +163,8 @@ void comm_health_continuous_get_errors(comm_interface_t *const comm)
   data_out_t data_out;
 
   // Process Output
-  data_out.has_error = (nrc_error.count_a > 0 || nrc_error.count_b > 0 || nap_error.count_a > 0 || nap_error.count_b > 0 ) ? true : false;
-  data_out.nrc_error = nrc_error;
-  data_out.nap_error = nap_error;
+  data_out.has_error = health_continuous_get_errors(&data_out.nrc_error, &data_out.nap_error);
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
-
-  // Reset errors
-  health_continuous_reset_errors();
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }

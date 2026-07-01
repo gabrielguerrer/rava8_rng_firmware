@@ -7,7 +7,7 @@
   "license": "MIT",
   "authors": {
     "name": "Gabriel Guerrer",
-    "homepage" : "http://gabrielguerrer.com/"    
+    "homepage" : "http://gabrielguerrer.com/"
   },
   "frameworks": "*",
   "platforms": "atmelavr",

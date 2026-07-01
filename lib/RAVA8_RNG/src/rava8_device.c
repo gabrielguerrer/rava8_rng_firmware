@@ -201,7 +201,7 @@ static uint16_t device_get_vcc(void)
 /*
 Processes the request to send the device identification, firmware version, and enabled module data.
 */
-void comm_device_get_info(comm_interface_t *const comm)
+void comm_device_get_info(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -223,13 +223,13 @@ void comm_device_get_info(comm_interface_t *const comm)
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to send the currently available RAM amount.
 */
-void comm_device_get_free_ram(comm_interface_t *const comm)
+void comm_device_get_free_ram(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -241,13 +241,13 @@ void comm_device_get_free_ram(comm_interface_t *const comm)
   data_out.free_ram = device_get_free_ram();
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to send the measured device temperature.
 */
-void comm_device_get_temperature(comm_interface_t *const comm)
+void comm_device_get_temperature(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -259,13 +259,13 @@ void comm_device_get_temperature(comm_interface_t *const comm)
   data_out.temp = device_get_temperature();
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
 Processes the request to send the measured device supply voltage.
 */
-void comm_device_get_vcc(comm_interface_t *const comm)
+void comm_device_get_vcc(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -277,5 +277,5 @@ void comm_device_get_vcc(comm_interface_t *const comm)
   data_out.vcc = device_get_vcc();
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }

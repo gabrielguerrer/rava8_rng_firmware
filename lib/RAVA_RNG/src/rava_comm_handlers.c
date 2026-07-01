@@ -17,7 +17,7 @@ const comm_handler_t rava_comm_handlers[RAVA_COMM_HANDLERS_COUNT] = {
   comm_device_get_free_ram,             // 3
   comm_device_get_temperature,          // 4
   comm_device_get_vcc,                  // 5
-  NULL,                                 // 6
+  comm_device_monitor,                  // 6
   NULL,                                 // 7
   NULL,                                 // 8
   NULL,                                 // 9
@@ -27,18 +27,18 @@ const comm_handler_t rava_comm_handlers[RAVA_COMM_HANDLERS_COUNT] = {
   comm_rng_gen_pulse_counts,            // 13
   comm_rng_gen_bit,                     // 14
   comm_rng_gen_bytes,                   // 15
-  comm_rng_gen_int8s,                   // 16
-  comm_rng_gen_int16s,                  // 17
-  comm_rng_gen_floats,                  // 18
-  comm_rng_gen_floats_downey,           // 19
-  NULL,                                 // 20
+  NULL,                                 // 16
+  comm_rng_gen_int8s,                   // 17
+  comm_rng_gen_int16s,                  // 18
+  comm_rng_gen_floats,                  // 19
+  comm_rng_gen_floats_downey,           // 20
   NULL,                                 // 21
   NULL,                                 // 22
   NULL,                                 // 23
   NULL,                                 // 24
   comm_rng_start_byte_stream,           // 25
-  comm_rng_stop_byte_stream,            // 26
-  comm_rng_get_status_byte_stream,      // 27
+  comm_rng_get_status_byte_stream,      // 26
+  comm_rng_stop_byte_stream,            // 27
   NULL,                                 // 28
   NULL,                                 // 29
   comm_health_startup_run,              // 30

@@ -40,8 +40,8 @@ bool health_startup_run_tests(void);
 bool health_startup_get_tests_result(void);
 
 // COMM
-void comm_health_startup_run(comm_interface_t *const comm);
-void comm_health_startup_get_results(comm_interface_t *const comm);
+void comm_health_startup_run(comm_interface_t *const comm_if);
+void comm_health_startup_get_results(comm_interface_t *const comm_if);
 
 #ifdef __cplusplus
 }

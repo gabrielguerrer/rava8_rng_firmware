@@ -42,7 +42,7 @@ float unpack_float(const uint8_t *bytes)
 }
 
 /*
-Returns the Hamming weight of an 8-bit value, corresponding to the number of bits set to 1 in the 
+Returns the Hamming weight of an 8-bit value, corresponding to the number of bits set to 1 in the
 input byte.
 */
 uint8_t hamming_weight_8(uint8_t byte) {
@@ -57,7 +57,7 @@ uint8_t hamming_weight_8(uint8_t byte) {
 /*
 Generates the minimum 8-bit mask capable of representing values in the interval [0, int_delta].
 
-The returned mask has all bits set up to the most significant bit of int_delta and is typically 
+The returned mask has all bits set up to the most significant bit of int_delta and is typically
 used for rejection-sampling of uniformly distributed integers.
 */
 uint8_t gen_int8s_mask(uint8_t int_delta)
@@ -77,7 +77,7 @@ uint8_t gen_int8s_mask(uint8_t int_delta)
 /*
 Generates the minimum 16-bit mask capable of representing values in the interval [0, int_delta].
 
-The returned mask has all bits set up to the most significant bit of int_delta and is typically 
+The returned mask has all bits set up to the most significant bit of int_delta and is typically
 used for rejection-sampling of uniformly distributed integers.
 */
 uint16_t gen_int16s_mask(uint16_t int_delta)

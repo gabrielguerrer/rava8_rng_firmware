@@ -105,7 +105,8 @@ typedef struct periph_t {
   volatile uint8_t *ddr;
   volatile uint8_t *pin;
   uint8_t _port_i;
-} periph_t;
+}
+periph_t;
 
 extern const periph_t *periphs[6];
 
@@ -126,23 +127,24 @@ static inline bool d1_read_fast(void) {return (PINE & 0b01000000) != 0;};
 // D2
 typedef struct input_capture_cfg_t {
   uint16_t req_id;
-  comm_interface_t *comm;
-} input_capture_cfg_t;
+  comm_interface_t *comm_if;
+}
+input_capture_cfg_t;
 
 extern input_capture_cfg_t input_capture_cfg;
 
 // COMM
-void comm_periph_digi(comm_interface_t *const comm);
-void comm_periph_d1_digi_fast(comm_interface_t *const comm);
-void comm_periph_d1_trigger_input(comm_interface_t *const comm);
-void comm_periph_d1_comparator(comm_interface_t *const comm);
-void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm);
-void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm);
-void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm);
-void comm_periph_d3_timer3_pwm(comm_interface_t *const comm);
-void comm_periph_d3_timer3_sound(comm_interface_t *const comm);
-void comm_periph_d4_pin_change(comm_interface_t *const comm);
-void comm_periph_d5_adc(comm_interface_t *const comm);
+void comm_periph_digi(comm_interface_t *const comm_if);
+void comm_periph_d1_digi_fast(comm_interface_t *const comm_if);
+void comm_periph_d1_trigger_input(comm_interface_t *const comm_if);
+void comm_periph_d1_comparator(comm_interface_t *const comm_if);
+void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm_if);
+void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_pwm(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_sound(comm_interface_t *const comm_if);
+void comm_periph_d4_pin_change(comm_interface_t *const comm_if);
+void comm_periph_d5_adc(comm_interface_t *const comm_if);
 
 #ifdef __cplusplus
 }

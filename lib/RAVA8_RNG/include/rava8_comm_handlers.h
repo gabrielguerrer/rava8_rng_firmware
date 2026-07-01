@@ -55,22 +55,22 @@ enum RAVA8_COMM_IDS
   COMM_PERIPH_D5_ADC = 67,
 };
 
-void comm_eeprom_reset_to_default(comm_interface_t *const comm);
-void comm_eeprom_get_rng_config(comm_interface_t *const comm);
-void comm_eeprom_set_rng_config(comm_interface_t *const comm);
+void comm_eeprom_reset_to_default(comm_interface_t *const comm_if);
+void comm_eeprom_get_rng_config(comm_interface_t *const comm_if);
+void comm_eeprom_set_rng_config(comm_interface_t *const comm_if);
 
 #ifdef PERIPHERALS_ENABLED
-void comm_periph_digi(comm_interface_t *const comm);
-void comm_periph_d1_digi_fast(comm_interface_t *const comm);
-void comm_periph_d1_trigger_input(comm_interface_t *const comm);
-void comm_periph_d1_comparator(comm_interface_t *const comm);
-void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm);
-void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm);
-void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm);
-void comm_periph_d3_timer3_pwm(comm_interface_t *const comm);
-void comm_periph_d3_timer3_sound(comm_interface_t *const comm);
-void comm_periph_d4_pin_change(comm_interface_t *const comm);
-void comm_periph_d5_adc(comm_interface_t *const comm);
+void comm_periph_digi(comm_interface_t *const comm_if);
+void comm_periph_d1_digi_fast(comm_interface_t *const comm_if);
+void comm_periph_d1_trigger_input(comm_interface_t *const comm_if);
+void comm_periph_d1_comparator(comm_interface_t *const comm_if);
+void comm_periph_d1_device_delay_us_test(comm_interface_t *const comm_if);
+void comm_periph_d2_timer3_input_capture(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_periodic_trigger_output(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_pwm(comm_interface_t *const comm_if);
+void comm_periph_d3_timer3_sound(comm_interface_t *const comm_if);
+void comm_periph_d4_pin_change(comm_interface_t *const comm_if);
+void comm_periph_d5_adc(comm_interface_t *const comm_if);
 #endif
 
 extern const comm_handler_t rava8_comm_handlers[RAVA8_COMM_HANDLERS_COUNT];

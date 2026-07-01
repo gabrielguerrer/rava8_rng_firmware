@@ -32,8 +32,8 @@ This is the main file which orchestrates the ATmega32U4 RAVA8 Firmware.
  * RAVA8
  * =========================== */
 
-static inline void task_health_startup_failed(comm_interface_t *const comm);
-static inline void task_rava_read(comm_interface_t *const comm);
+static inline void task_health_startup_failed(comm_interface_t *const comm_if);
+static inline void task_rava_read(comm_interface_t *const comm_if);
 static inline void task_rng_stream(void);
 static inline void loop_health_startup_failed(void);
 
@@ -133,6 +133,9 @@ static inline void task_health_startup_failed(comm_interface_t *const comm_if)
   if (comm_id == COMM_DEVICE_GET_INFO) {
     comm_device_get_info(comm_if);
   }
+  else if (comm_id == COMM_DEVICE_GET_USAGE) {
+    comm_device_get_usage(comm_if);
+  }
   else if (comm_id == COMM_EEPROM_RESET_TO_DEFAULT) {
     comm_eeprom_reset_to_default(comm_if);
   }
@@ -158,7 +161,7 @@ static inline void task_rava_read(comm_interface_t *const comm_if)
     return;
   }
 
-  // Valid message arrived and available in in comm->msg
+  // Valid message arrived and available in in comm_if->msg
 
   // Validate comm_id
   uint8_t comm_id = comm_if->msg.comm_id;

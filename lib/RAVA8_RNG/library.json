@@ -2,12 +2,12 @@
   "name": "RAVA8_RNG",
   "keywords": "RAVA, RNG, random number generator, open source",
   "description": "The RAVA8_RNG library implements the RAVA random number generator architecture for the ATmega32U4 microcontroller",
-  "homepage": "http://rava-rng.org/",  
+  "homepage": "http://rava-rng.org/",
   "version": "1.0.0",
   "license": "MIT",
   "authors": {
     "name": "Gabriel Guerrer",
-    "homepage" : "http://gabrielguerrer.com/"    
+    "homepage" : "http://gabrielguerrer.com/"
   },
   "frameworks": "*",
   "platforms": "atmelavr",

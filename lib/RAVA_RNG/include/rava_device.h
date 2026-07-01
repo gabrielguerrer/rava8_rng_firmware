@@ -36,21 +36,23 @@ typedef struct device_info_t
   uint8_t firmw_ver_major, firmw_ver_minor, firmw_ver_patch, firmw_modules;
   uint16_t rng_gen_max_nbytes_per_core;
   uint8_t serial_number[SERIAL_NUMBER_N_BYTES];
-} device_info_t;
+}
+device_info_t;
 
 // COMM
-void comm_device_ping(comm_interface_t *const comm);
-void comm_device_get_usage(comm_interface_t *const comm);
+void comm_device_ping(comm_interface_t *const comm_if);
+void comm_device_get_usage(comm_interface_t *const comm_if);
+void comm_device_monitor(comm_interface_t *const comm_if);
 
 /* ==============================
  * Implemented by the application
  * ============================== */
 
 // COMM
-void comm_device_get_info(comm_interface_t *const comm);
-void comm_device_get_free_ram(comm_interface_t *const comm);
-void comm_device_get_temperature(comm_interface_t *const comm);
-void comm_device_get_vcc(comm_interface_t *const comm);
+void comm_device_get_info(comm_interface_t *const comm_if);
+void comm_device_get_free_ram(comm_interface_t *const comm_if);
+void comm_device_get_temperature(comm_interface_t *const comm_if);
+void comm_device_get_vcc(comm_interface_t *const comm_if);
 
 #ifdef __cplusplus
 }

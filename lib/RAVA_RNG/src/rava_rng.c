@@ -20,15 +20,6 @@ static uint8_t rng_gen_bit_yield(uint8_t postproc_id);
 static void rng_gen_byte_pp_xor(uint8_t *const byte_a, uint8_t *const byte_b);
 static void rng_gen_byte_pp_xor_dichtl(uint8_t *const byte_a, uint8_t *const byte_b);
 
-static void rng_write_pulse_counts(comm_interface_t *const comm, uint16_t n_counts, uint8_t rng_cores);
-static void rng_write_bit(comm_interface_t *const comm, uint8_t rng_cores);
-static void rng_write_bytes(comm_interface_t *const comm, uint16_t n_bytes, uint8_t rng_cores, uint8_t postproc_id);
-
-static void rng_write_int8s(comm_interface_t *const comm, uint16_t n_ints, uint8_t int_delta, uint8_t postproc_id);
-static void rng_write_int16s(comm_interface_t *const comm, uint16_t n_ints, uint16_t int_delta, uint8_t postproc_id);
-static void rng_write_floats(comm_interface_t *const comm, uint16_t n_floats, uint8_t postproc_id);
-static void rng_write_floats_downey(comm_interface_t *const comm, uint16_t n_floats, uint8_t postproc_id);
-
 // Lookup table of random-byte generation methods
 typedef void (*gen_byte_fn)(uint8_t *const byte_a, uint8_t *const byte_b);
 
@@ -117,7 +108,7 @@ void rng_gen_byte_pp_xor_dichtl(uint8_t *const byte_a, uint8_t *const byte_b)
 /*
 Generates and sends pulse counts.
 */
-void rng_write_pulse_counts(comm_interface_t *const comm, uint16_t n_counts, uint8_t rng_cores)
+void rng_write_pulse_counts(comm_interface_t *const comm_if, uint16_t n_counts_per_core, uint8_t rng_cores)
 {
   // Vars
   uint8_t pc_a, pc_b;
@@ -127,7 +118,7 @@ void rng_write_pulse_counts(comm_interface_t *const comm, uint16_t n_counts, uin
   rng_read_initialize();
 
   // Loop
-  for (uint16_t i = 0; i < n_counts; i++) {
+  for (uint16_t i = 0; i < n_counts_per_core; i++) {
 
     /////////////////////////////
     // Generate
@@ -145,14 +136,14 @@ void rng_write_pulse_counts(comm_interface_t *const comm, uint16_t n_counts, uin
     // Send
 
     if (rng_cores == RNG_CORES_AB_DUAL || rng_cores == RNG_CORES_AB_ALT) {
-      comm->write(pc_a);
-      comm->write(pc_b);
+      comm_if->write(pc_a);
+      comm_if->write(pc_b);
     }
     else if (rng_cores == RNG_CORES_A) {
-      comm->write(pc_a);
+      comm_if->write(pc_a);
     }
     else if (rng_cores == RNG_CORES_B) {
-      comm->write(pc_b);
+      comm_if->write(pc_b);
     }
   }
 
@@ -160,13 +151,13 @@ void rng_write_pulse_counts(comm_interface_t *const comm, uint16_t n_counts, uin
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
 Generates and sends random bits.
 */
-void rng_write_bit(comm_interface_t *const comm, uint8_t rng_cores)
+void rng_write_bit(comm_interface_t *const comm_if, uint8_t rng_cores)
 {
   // Vars
   uint8_t bit_a, bit_b;
@@ -190,30 +181,30 @@ void rng_write_bit(comm_interface_t *const comm, uint8_t rng_cores)
   // Send
 
   if (rng_cores == RNG_CORES_AB_DUAL || rng_cores == RNG_CORES_AB_ALT) {
-    comm->write(bit_a);
-    comm->write(bit_b);
+    comm_if->write(bit_a);
+    comm_if->write(bit_b);
   }
   else if (rng_cores == RNG_CORES_AB_XOR) {
-    comm->write(bit_a ^ bit_b);
+    comm_if->write(bit_a ^ bit_b);
   }
   else if (rng_cores == RNG_CORES_A) {
-    comm->write(bit_a);
+    comm_if->write(bit_a);
   }
   else if (rng_cores == RNG_CORES_B) {
-    comm->write(bit_b);
+    comm_if->write(bit_b);
   }
 
   // Finalize
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
 Generates and sends random bytes.
 */
-void rng_write_bytes(comm_interface_t *const comm, uint16_t n_bytes, uint8_t rng_cores, uint8_t postproc_id)
+void rng_write_bytes(comm_interface_t *const comm_if, uint16_t n_bytes_per_core, uint8_t rng_cores, uint8_t postproc_id)
 {
   // Vars
   uint8_t byte_a, byte_b;
@@ -222,7 +213,7 @@ void rng_write_bytes(comm_interface_t *const comm, uint16_t n_bytes, uint8_t rng
   rng_read_initialize();
 
   // Loop
-  for (uint16_t i = 0; i < n_bytes; i++) {
+  for (uint16_t i = 0; i < n_bytes_per_core; i++) {
 
     /////////////////////////////
     // Generate
@@ -243,17 +234,17 @@ void rng_write_bytes(comm_interface_t *const comm, uint16_t n_bytes, uint8_t rng
     // Send
 
     if (rng_cores == RNG_CORES_AB_DUAL || rng_cores == RNG_CORES_AB_ALT) {
-      comm->write(byte_a);
-      comm->write(byte_b);
+      comm_if->write(byte_a);
+      comm_if->write(byte_b);
     }
     else if (rng_cores == RNG_CORES_AB_XOR) {
-      comm->write(byte_a ^ byte_b);
+      comm_if->write(byte_a ^ byte_b);
     }
     else if (rng_cores == RNG_CORES_A) {
-      comm->write(byte_a);
+      comm_if->write(byte_a);
     }
     else if (rng_cores == RNG_CORES_B) {
-      comm->write(byte_b);
+      comm_if->write(byte_b);
     }
   }
 
@@ -261,7 +252,7 @@ void rng_write_bytes(comm_interface_t *const comm, uint16_t n_bytes, uint8_t rng
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
@@ -270,27 +261,33 @@ Called by the implementation app at a fixed interval to generate and send random
 void rng_write_byte_stream(void)
 {
   // IO Structure
-  typedef struct {uint8_t rng_cores;} data_out_t;
-  data_out_t data_out = {.rng_cores = rng_byte_stream_cfg.rng_cores};
+  typedef struct {uint16_t n_bytes_per_core, stream_interval_ms; uint8_t rng_cores, postproc_id;} data_out_t;
+  data_out_t data_out = {
+    .n_bytes_per_core = rng_byte_stream_cfg.n_bytes_per_core,
+    .stream_interval_ms = rng_byte_stream_cfg.interval_ms,
+    .rng_cores = rng_byte_stream_cfg.rng_cores,
+    .postproc_id = rng_byte_stream_cfg.postproc_id
+  };
 
   // Process Output
-  uint16_t n_bytes_out = ((rng_byte_stream_cfg.rng_cores == RNG_CORES_AB_DUAL || rng_byte_stream_cfg.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * rng_byte_stream_cfg.n_bytes;
+  uint16_t n_bytes_out = ((rng_byte_stream_cfg.rng_cores == RNG_CORES_AB_DUAL || rng_byte_stream_cfg.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * rng_byte_stream_cfg.n_bytes_per_core;
 
-  // Inject original req_id, and comm_id in comm
-  rng_byte_stream_cfg.comm->msg.req_id = rng_byte_stream_cfg.req_id;
-  rng_byte_stream_cfg.comm->msg.comm_id = COMM_RNG_GEN_BYTES;
+  // Inject original cli_id, req_id, and comm_id in comm
+  rng_byte_stream_cfg.comm_if->msg.cli_id = rng_byte_stream_cfg.cli_id;
+  rng_byte_stream_cfg.comm_if->msg.req_id = rng_byte_stream_cfg.req_id;
+  rng_byte_stream_cfg.comm_if->msg.comm_id = COMM_RNG_GEN_BYTES_STREAM;
 
   // Send Header
-  send_rava_msg_header(rng_byte_stream_cfg.comm, CE_OK, n_bytes_out, sizeof(data_out), &data_out);
+  send_rava_msg_header(rng_byte_stream_cfg.comm_if, CE_OK, n_bytes_out, sizeof(data_out), &data_out);
 
   // Send Bytes
-  rng_write_bytes(rng_byte_stream_cfg.comm, rng_byte_stream_cfg.n_bytes, rng_byte_stream_cfg.rng_cores, rng_byte_stream_cfg.postproc_id);
+  rng_write_bytes(rng_byte_stream_cfg.comm_if, rng_byte_stream_cfg.n_bytes_per_core, rng_byte_stream_cfg.rng_cores, rng_byte_stream_cfg.postproc_id);
 }
 
 /*
 Generates and sends 8-bit integers uniformly distributed over the interval [0, int_delta].
 */
-void rng_write_int8s(comm_interface_t *const comm, uint16_t n_ints, uint8_t int_delta, uint8_t postproc_id)
+void rng_write_int8s(comm_interface_t *const comm_if, uint16_t n_ints, uint8_t int_delta, uint8_t postproc_id)
 {
   // Vars
   uint8_t int_a, int_b;
@@ -320,14 +317,14 @@ void rng_write_int8s(comm_interface_t *const comm, uint16_t n_ints, uint8_t int_
 
     if (int_a <= int_delta) {
       i++;
-      comm->write(int_a);
+      comm_if->write(int_a);
     }
     if (i == n_ints) {
       break;
     }
     if (int_b <= int_delta) {
       i++;
-      comm->write(int_b);
+      comm_if->write(int_b);
     }
   }
 
@@ -335,13 +332,13 @@ void rng_write_int8s(comm_interface_t *const comm, uint16_t n_ints, uint8_t int_
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
 Generates and sends 16-bit integers uniformly distributed over the interval [0, int_delta].
 */
-void rng_write_int16s(comm_interface_t *const comm, uint16_t n_ints, uint16_t int_delta, uint8_t postproc_id)
+void rng_write_int16s(comm_interface_t *const comm_if, uint16_t n_ints, uint16_t int_delta, uint8_t postproc_id)
 {
   // Vars
   uint16_u int_a, int_b;
@@ -373,14 +370,14 @@ void rng_write_int16s(comm_interface_t *const comm, uint16_t n_ints, uint16_t in
     // Test range and Send
     if (int_a.i <= int_delta) {
       i++;
-      comm->write_buf(int_a.b, 2);
+      comm_if->write_buf(int_a.b, 2);
     }
     if (i == n_ints) {
       break;
     }
     if (int_b.i <= int_delta) {
       i++;
-      comm->write_buf(int_b.b, 2);
+      comm_if->write_buf(int_b.b, 2);
     }
   }
 
@@ -388,13 +385,13 @@ void rng_write_int16s(comm_interface_t *const comm, uint16_t n_ints, uint16_t in
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
 Generates and sends floats uniformly distributed over the interval [0, 1).
 */
-void rng_write_floats(comm_interface_t *const comm, uint16_t n_floats, uint8_t postproc_id)
+void rng_write_floats(comm_interface_t *const comm_if, uint16_t n_floats, uint8_t postproc_id)
 {
   // Vars
   float_u f_a, f_b;
@@ -428,21 +425,21 @@ void rng_write_floats(comm_interface_t *const comm, uint16_t n_floats, uint8_t p
     // Send
 
     i++;
-    comm->write_buf(f_a.b, 4);
+    comm_if->write_buf(f_a.b, 4);
 
     if (i == n_floats) {
       break;
     }
 
     i++;
-    comm->write_buf(f_b.b, 4);
+    comm_if->write_buf(f_b.b, 4);
   }
 
   // Finalize
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 /*
@@ -451,7 +448,7 @@ described in:
 Downey, Allen B. "Generating pseudo-random floating-point values"
 https://www.allendowney.com/research/rand/downey07randfloat.pdf
 */
-void rng_write_floats_downey(comm_interface_t *const comm, uint16_t n_floats, uint8_t postproc_id)
+void rng_write_floats_downey(comm_interface_t *const comm_if, uint16_t n_floats, uint8_t postproc_id)
 {
   // Vars
   int8_t exp;
@@ -485,14 +482,14 @@ void rng_write_floats_downey(comm_interface_t *const comm, uint16_t n_floats, ui
 
     /////////////////////////////
     // Send
-    comm->write_buf(f.b, 4);
+    comm_if->write_buf(f.b, 4);
   }
 
   // Finalize
   rng_read_finalize();
 
   // Flush
-  comm->flush();
+  comm_if->flush();
 }
 
 
@@ -503,7 +500,7 @@ void rng_write_floats_downey(comm_interface_t *const comm, uint16_t n_floats, ui
 /*
 Processes the request to send the current RNG configuration.
 */
- void comm_rng_get_config(comm_interface_t *const comm)
+ void comm_rng_get_config(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -515,13 +512,13 @@ Processes the request to send the current RNG configuration.
   data_out.rng_cfg = rng_cfg;
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }
 
 /*
-Processes the request to apply the provided RNG configuration parameters.
+Processes the request to update the RNG configuration using the provided parameters.
 */
-void comm_rng_set_config(comm_interface_t *const comm)
+void comm_rng_set_config(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {rng_config_t rng_cfg;} data_in_t;
@@ -530,11 +527,11 @@ void comm_rng_set_config(comm_interface_t *const comm)
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   // Process Output
@@ -545,19 +542,19 @@ void comm_rng_set_config(comm_interface_t *const comm)
     rng_setup(data_in.rng_cfg.sampling_interval)    // Setup RNG
     )) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to enable/disable byte-generation timing debugging, exposed as a digital
 signal on a designated device output pin.
 */
-void comm_rng_set_timing_debug(comm_interface_t *const comm)
+void comm_rng_set_timing_debug(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint8_t on;} data_in_t;
@@ -566,62 +563,62 @@ void comm_rng_set_timing_debug(comm_interface_t *const comm)
   // data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   // Process Output
   rng_setup_timing_debug(data_in.on);
 
   // Send
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to send pulse-count measurements.
 */
-void comm_rng_gen_pulse_counts(comm_interface_t *const comm) {
+void comm_rng_gen_pulse_counts(comm_interface_t *const comm_if) {
   // IO Structure
-  typedef struct {uint16_t n_counts; uint8_t rng_cores;} data_in_t;
+  typedef struct {uint16_t n_counts_per_core; uint8_t rng_cores;} data_in_t;
   //typedef struct {} data_out_t;
   data_in_t  data_in;
   //data_out_t data_out;
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
-  if (!(data_in.n_counts > 0 &&
-        data_in.n_counts <= RNG_GEN_MAX_NBYTES_PER_CORE &&
+  if (!(data_in.n_counts_per_core > 0 &&
+        data_in.n_counts_per_core <= RNG_GEN_MAX_NBYTES_PER_CORE &&
         data_in.rng_cores < RNG_CORES_ENUM_LAST &&
         data_in.rng_cores != RNG_CORES_AB_XOR)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
   // Process Output
-  n_bytes = ((data_in.rng_cores == RNG_CORES_AB_DUAL || data_in.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * data_in.n_counts;
+  n_bytes = ((data_in.rng_cores == RNG_CORES_AB_DUAL || data_in.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * data_in.n_counts_per_core;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send PCs
-  rng_write_pulse_counts(comm, data_in.n_counts, data_in.rng_cores);
+  rng_write_pulse_counts(comm_if, data_in.n_counts_per_core, data_in.rng_cores);
 }
 
 /*
 Processes the request to send random bits.
 */
-void comm_rng_gen_bit(comm_interface_t *const comm){
+void comm_rng_gen_bit(comm_interface_t *const comm_if){
   // IO Structure
   typedef struct {uint8_t rng_cores;} data_in_t;
   //typedef struct {} data_out_t;
@@ -630,16 +627,16 @@ void comm_rng_gen_bit(comm_interface_t *const comm){
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   if (!(data_in.rng_cores < RNG_CORES_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -647,58 +644,58 @@ void comm_rng_gen_bit(comm_interface_t *const comm){
   n_bytes = (data_in.rng_cores == RNG_CORES_AB_DUAL || data_in.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Bit
-  rng_write_bit(comm, data_in.rng_cores);
+  rng_write_bit(comm_if, data_in.rng_cores);
 }
 
 /*
 Processes the request to send random bytes.
 
-The parameter n_bytes specifies the number of bytes generated per RNG core and must not exceed
-RNG_GEN_MAX_NBYTES_PER_CORE.
+The parameter n_bytes_per_core specifies the number of bytes generated per RNG core and must not
+exceed RNG_GEN_MAX_NBYTES_PER_CORE.
 */
-void comm_rng_gen_bytes(comm_interface_t *const comm)
+void comm_rng_gen_bytes(comm_interface_t *const comm_if)
 {
   // IO Structure
-  typedef struct {uint16_t n_bytes; uint8_t rng_cores, postproc_id;} data_in_t;
+  typedef struct {uint16_t n_bytes_per_core; uint8_t rng_cores, postproc_id;} data_in_t;
   //typedef struct {} data_out_t;
   data_in_t  data_in;
   //data_out_t data_out;
-  uint16_t n_bytes_out;
+  uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
-  if (!(data_in.n_bytes > 0 &&
-        data_in.n_bytes <= RNG_GEN_MAX_NBYTES_PER_CORE &&
+  if (!(data_in.n_bytes_per_core > 0 &&
+        data_in.n_bytes_per_core <= RNG_GEN_MAX_NBYTES_PER_CORE &&
         data_in.rng_cores < RNG_CORES_ENUM_LAST &&
         data_in.postproc_id < RNG_PP_ENUM_LAST) ) {
 
-      send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+      send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
       return;
     }
 
   // Process Output
-  n_bytes_out = ((data_in.rng_cores == RNG_CORES_AB_DUAL || data_in.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * data_in.n_bytes;
+  n_bytes = ((data_in.rng_cores == RNG_CORES_AB_DUAL || data_in.rng_cores == RNG_CORES_AB_ALT) ? 2 : 1) * data_in.n_bytes_per_core;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes_out, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Bytes
-  rng_write_bytes(comm, data_in.n_bytes, data_in.rng_cores, data_in.postproc_id);
+  rng_write_bytes(comm_if, data_in.n_bytes_per_core, data_in.rng_cores, data_in.postproc_id);
 }
 
 /*
 Processes the request to send u8 integers in the range [0, int_delta].
 */
-void comm_rng_gen_int8s(comm_interface_t *const comm)
+void comm_rng_gen_int8s(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint16_t n_ints; uint8_t int_delta, postproc_id;} data_in_t;
@@ -708,11 +705,11 @@ void comm_rng_gen_int8s(comm_interface_t *const comm)
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   if (!(data_in.n_ints > 0 &&
@@ -720,7 +717,7 @@ void comm_rng_gen_int8s(comm_interface_t *const comm)
         data_in.int_delta > 0 &&
         data_in.postproc_id < RNG_PP_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -728,16 +725,16 @@ void comm_rng_gen_int8s(comm_interface_t *const comm)
   n_bytes = data_in.n_ints;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Int8s
-  rng_write_int8s(comm, data_in.n_ints, data_in.int_delta, data_in.postproc_id);
+  rng_write_int8s(comm_if, data_in.n_ints, data_in.int_delta, data_in.postproc_id);
 }
 
 /*
 Processes the request to send u16 integers in the range [0, int_delta].
 */
-void comm_rng_gen_int16s(comm_interface_t *const comm)
+void comm_rng_gen_int16s(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint16_t n_ints, int_delta; uint8_t postproc_id;} data_in_t;
@@ -747,11 +744,11 @@ void comm_rng_gen_int16s(comm_interface_t *const comm)
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   if (!(data_in.n_ints > 0 &&
@@ -759,7 +756,7 @@ void comm_rng_gen_int16s(comm_interface_t *const comm)
         data_in.int_delta > 0 &&
         data_in.postproc_id < RNG_PP_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -767,16 +764,16 @@ void comm_rng_gen_int16s(comm_interface_t *const comm)
   n_bytes = 2 * data_in.n_ints;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Int16s
-  rng_write_int16s(comm, data_in.n_ints, data_in.int_delta, data_in.postproc_id);
+  rng_write_int16s(comm_if, data_in.n_ints, data_in.int_delta, data_in.postproc_id);
 }
 
 /*
 Processes the request to send 4-byte floats in the range [0, 1).
 */
-void comm_rng_gen_floats(comm_interface_t *const comm)
+void comm_rng_gen_floats(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint16_t n_floats; uint8_t postproc_id;} data_in_t;
@@ -786,18 +783,18 @@ void comm_rng_gen_floats(comm_interface_t *const comm)
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   if (!(data_in.n_floats > 0 &&
         data_in.n_floats <= RNG_GEN_MAX_NBYTES_PER_CORE/2 &&
         data_in.postproc_id < RNG_PP_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -805,16 +802,16 @@ void comm_rng_gen_floats(comm_interface_t *const comm)
   n_bytes = 4 * data_in.n_floats;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Floats
-  rng_write_floats(comm, data_in.n_floats, data_in.postproc_id);
+  rng_write_floats(comm_if, data_in.n_floats, data_in.postproc_id);
 }
 
 /*
 Processes the request to send 4-byte floats in the range [0, 1) using Downey's method.
 */
-void comm_rng_gen_floats_downey(comm_interface_t *const comm)
+void comm_rng_gen_floats_downey(comm_interface_t *const comm_if)
 {
   // IO Structure
   typedef struct {uint16_t n_floats; uint8_t postproc_id;} data_in_t;
@@ -824,18 +821,18 @@ void comm_rng_gen_floats_downey(comm_interface_t *const comm)
   uint16_t n_bytes;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
   if (!(data_in.n_floats > 0 &&
         data_in.n_floats <= RNG_GEN_MAX_NBYTES_PER_CORE &&
         data_in.postproc_id < RNG_PP_ENUM_LAST)) {
 
-    send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
     return;
   }
 
@@ -843,65 +840,70 @@ void comm_rng_gen_floats_downey(comm_interface_t *const comm)
   n_bytes = 4 * data_in.n_floats;
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, n_bytes, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, n_bytes, sizeof(data_in), &data_in);
 
   // Send Floats
-  rng_write_floats_downey(comm, data_in.n_floats, data_in.postproc_id);
+  rng_write_floats_downey(comm_if, data_in.n_floats, data_in.postproc_id);
 }
 
 /*
 Processes the request to start periodic random-byte streaming.
 */
-void comm_rng_start_byte_stream(comm_interface_t *const comm)
+void comm_rng_start_byte_stream(comm_interface_t *const comm_if)
 {
   // IO Structure
-  typedef struct {uint16_t n_bytes, stream_interval_ms; uint8_t rng_cores, postproc_id;} data_in_t;
+  typedef struct {uint16_t n_bytes_per_core, stream_interval_ms; uint8_t rng_cores, postproc_id;} data_in_t;
   //typedef struct {} data_out_t;
   data_in_t  data_in;
   //data_out_t data_out;
 
   // Input Deserialization
-  if (comm->msg.data_len != sizeof(data_in)) {
-    send_rava_msg_header(comm, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
+  if (comm_if->msg.data_len != sizeof(data_in)) {
+    send_rava_msg_header(comm_if, CE_INVALID_INPUT_TYPES, 0, 0, NULL);
     return;
     }
-  memcpy(&data_in, comm->msg.data, sizeof(data_in));
+  memcpy(&data_in, comm_if->msg.data, sizeof(data_in));
 
   // Validate Input
-  if (!(data_in.n_bytes > 0 &&
-        data_in.n_bytes <= RNG_GEN_MAX_NBYTES_PER_CORE &&
+  if (!(data_in.n_bytes_per_core > 0 &&
+        data_in.n_bytes_per_core <= RNG_GEN_MAX_NBYTES_PER_CORE &&
         data_in.stream_interval_ms <= rng_byte_stream_cfg.interval_ms_max &&
         data_in.rng_cores < RNG_CORES_ENUM_LAST &&
         data_in.postproc_id < RNG_PP_ENUM_LAST)) {
 
-      send_rava_msg_header(comm, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
+      send_rava_msg_header(comm_if, CE_INVALID_INPUT_VALUES, 0, 0, NULL);
       return;
     }
 
   // Process Output
-  rng_start_byte_stream(comm, data_in.n_bytes, data_in.stream_interval_ms, data_in.rng_cores, data_in.postproc_id);
+  if (rng_byte_stream_cfg.streaming) {
+    send_rava_msg_header(comm_if, CE_BYTE_STREAM_BUSY, 0, 0, NULL);
+    return;
+  }
+
+  rng_start_byte_stream(comm_if, data_in.n_bytes_per_core, data_in.stream_interval_ms, data_in.rng_cores, data_in.postproc_id);
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to stop periodic random-byte streaming.
 */
-void comm_rng_stop_byte_stream(comm_interface_t *const comm)
+void comm_rng_stop_byte_stream(comm_interface_t *const comm_if)
 {
   // Process Output
   rng_stop_byte_stream();
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, 0, 0, NULL);
+  send_rava_msg_header(comm_if, CE_OK, 0, 0, NULL);
 }
 
 /*
 Processes the request to inform whether fixed-interval random-byte generation is enabled and the
 associated request identifier.
 */
-void comm_rng_get_status_byte_stream(comm_interface_t *const comm)
+void comm_rng_get_status_byte_stream(comm_interface_t *const comm_if)
 {
   // IO Structure
   //typedef struct {} data_in_t;
@@ -919,5 +921,5 @@ void comm_rng_get_status_byte_stream(comm_interface_t *const comm)
   }
 
   // Send Header
-  send_rava_msg_header(comm, CE_OK, 0, sizeof(data_out), &data_out);
+  send_rava_msg_header(comm_if, CE_OK, 0, sizeof(data_out), &data_out);
 }

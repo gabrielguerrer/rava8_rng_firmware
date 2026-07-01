@@ -12,6 +12,13 @@ reverse-biased Zeners noise sources.
 The PWM configuration is defined by two parameters: the PWM frequency and the PWM duty cycle
 (ranging from 0 to 255). During initialization, these values are loaded from EEPROM memory. They
 may also be reconfigured during runtime through the COMM_RNG_SET_CONFIG command.
+
+The recommended parameters for the RAVA8 RNG are as follows:
+- PWM boost frequency: 50 kHz
+- PWM boost duty-cycle setting: 20
+
+These PWM boost parameters were determined experimentally by maximizing the avalanche pulse count
+while minimizing current consumption.
 */
 
 #ifndef RAVA8_PWM_BOOST_H

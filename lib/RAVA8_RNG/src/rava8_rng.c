@@ -269,13 +269,14 @@ Starts periodic random-byte streaming.
 Timer 3 is configured to periodically trigger byte generation through the `TIMER3_COMPA_vect`
 interrupt service routine.
 */
-void rng_start_byte_stream(comm_interface_t *const comm, uint16_t n_bytes, uint16_t interval_ms,
-  uint8_t rng_cores, uint8_t postproc_id)
+void rng_start_byte_stream(comm_interface_t *const comm_if, uint16_t n_bytes_per_core,
+  uint16_t interval_ms, uint8_t rng_cores, uint8_t postproc_id)
 {
   // Configure
-  rng_byte_stream_cfg.req_id = comm->msg.req_id;
-  rng_byte_stream_cfg.comm = comm;
-  rng_byte_stream_cfg.n_bytes = n_bytes;
+  rng_byte_stream_cfg.cli_id = comm_if->msg.cli_id;
+  rng_byte_stream_cfg.req_id = comm_if->msg.req_id;
+  rng_byte_stream_cfg.comm_if = comm_if;
+  rng_byte_stream_cfg.n_bytes_per_core = n_bytes_per_core;
   rng_byte_stream_cfg.interval_ms = interval_ms;
   rng_byte_stream_cfg.postproc_id = postproc_id;
   rng_byte_stream_cfg.rng_cores = rng_cores;
